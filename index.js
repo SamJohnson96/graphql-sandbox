@@ -5,28 +5,27 @@ var _ = require('lodash');
 // Helper
 function generateMutator(operation, model, body) {
 
-
 	var input = generateInput(body);
 
+	console.log(JSON.stringify(input, null, 2));
+
 	input = JSON.stringify(input);
-
-	console.log(input);
-
 
 	// We're simply building a string.
 
 	// Mutator keyword and operation name we're performing
-	var string = 'Mutator ' + operation + ' { \n';
+	var string = 'mutation ' + operation + '{';
 
-	string += '\t' + operation + '(input:' + input + ') { \n';
+	string += operation + '(input:' + input + '){';
 
-	string += '\t\t' + model + '{ \n';
+	string += '' + model + '{';
 
 	// Mapping will go on here
 
-	string += '\t\t' + '} \n';
+	string += '}';
 
-	string += '\t' + '} \n';
+	string +=  '}';
+
 	// End query
 	string += '}';
 
@@ -36,9 +35,9 @@ function generateMutator(operation, model, body) {
 
 
 // Recursive method that will go through each json body object. camelCase everything
-function generateInput(json_body) {
+function generateInput (json_body) {
 
-	return _.reduce(json_body, function(acc, value, key) {
+	return _.reduce(json_body, function (acc, value, key) {
 
 		// CAMEL CASE ALL KEYS
 		key = _.camelCase(key);
@@ -47,7 +46,7 @@ function generateInput(json_body) {
 		if (_.isArray(value)) {
 			acc[key] = generateInput(value);
 		} else if (_.isPlainObject(value)) {
-			acc[key] = generateInput(value)
+			acc[key] = generateInput(value);
 		} else {
 			acc[key] = value;
 		}
@@ -63,7 +62,10 @@ var test_body = {
 	first_name: 'foo_bar',
 	test_body: {
 		another_test: 'yo',
-		foo_bar: 'test'
+		foo_bar: {
+			foo_boo: 'hello',
+			foo_boo_two: 'whatsup'
+		}
 	},
 	test_array: [{
 		text_value: 'foo_bar',
@@ -72,7 +74,7 @@ var test_body = {
 		text_value: 'foo_bar',
 		foo_bar: 'foo_bar'
 	}]
-}
+};
 
 // 1 - OPERATION NAME USED BY PIPELINER, 2 - THE MODEL THAT WILL BE EDITED 3 - BODY THAT USER HAS DEFINED
 var query = generateMutator('addAccount', 'account', test_body);
